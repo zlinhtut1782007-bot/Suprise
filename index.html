@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Love Quiz - Surprise!</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #ff4d6d;
+      --primary-hover: #ff758f;
+      --card-bg: rgba(15, 23, 42, 0.85); /* Dark Glassmorphism */
+      --text-color: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      /* Van Gogh Starry Night Background Image */
+      background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1280px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+      color: var(--text-color);
+      animation: panBg 30s ease-in-out infinite alternate;
+    }
+
+    /* Subtle movement animation for background */
+    @keyframes panBg {
+      0% { background-position: center left; }
+      100% { background-position: center right; }
+    }
+
+    /* Floating Star Animation Background */
+    .bg-stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .star-particle {
+      position: absolute;
+      bottom: -20px;
+      font-size: 18px;
+      animation: floatUp 6s linear infinite;
+      opacity: 0.8;
+      filter: drop-shadow(0 0 6px rgba(255, 223, 0, 0.8));
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0.9; }
+      50% { opacity: 1; transform: translateY(-55vh) rotate(180deg) scale(1.2); }
+      100% { transform: translateY(-110vh) rotate(360deg) scale(0.8); opacity: 0; }
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 32px 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 2rem;
+      color: #ffffff;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      margin-bottom: 24px;
+      font-weight: 400;
+    }
+
+    /* WELCOME CARD */
+    .welcome-card {
+      display: block;
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    .welcome-icon {
+      font-size: 3.5rem;
+      margin-bottom: 15px;
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.15); }
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      width: 100%;
+      background-color: rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      height: 10px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff758f, #ff4d6d);
+      border-radius: 10px;
+      transition: width 0.4s ease;
+    }
+
+    /* Quiz Box */
+    .quiz-card {
+      display: none;
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    .question-box {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #ffffff;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .btn-option {
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid transparent;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1e293b;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      outline: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .btn-option:hover {
+      border-color: var(--primary);
+      background-color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    .btn-option.correct {
+      background-color: #4caf50 !important;
+      border-color: #2e7d32 !important;
+      color: #ffffff !important;
+    }
+
+    .btn-option.wrong {
+      background-color: #ef5350 !important;
+      border-color: #c62828 !important;
+      color: #ffffff !important;
+      animation: shake 0.3s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    /* Vault Final Page */
+    .vault-card {
+      display: none;
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .final-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 2.2rem;
+      color: #ffffff;
+      margin-bottom: 15px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+    }
+
+    .cat-sticker-container {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .cat-sticker {
+      max-width: 220px;
+      width: 100%;
+      height: auto;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-main {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(255, 77, 109, 0.4);
+      transition: all 0.3s ease;
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    .btn-main:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 77, 109, 0.6);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Music Audio Element -->
+  <audio id="bgMusic" loop preload="auto">
+    <source src="music.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Floating Background Stars -->
+  <div class="bg-stars" id="bgStars"></div>
+
+  <div class="container">
+    
+    <!-- PAGE 1: WELCOME PAGE -->
+    <div id="welcomeCard" class="welcome-card">
+      <div class="welcome-icon">💌</div>
+      <h1 class="title">Welcome My Love ❤️</h1>
+      <p class="subtitle">I have 5 special questions for you...</p>
+      <button class="btn-main" onclick="startQuiz()">Click to answer</button>
+    </div>
+
+    <!-- PAGE 2: QUIZ CARD -->
+    <div id="quizCard" class="quiz-card">
+      <h1 class="title">Love Quiz 💕</h1>
+      <p class="subtitle" id="quizSubtitle">Answer all 5 questions to unlock your surprise!</p>
+
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <div class="question-box" id="questionBox">
+        Loading Question...
+      </div>
+
+      <div class="options-grid" id="optionsGrid">
+        <!-- Buttons added dynamically -->
+      </div>
+    </div>
+
+    <!-- PAGE 3: FINAL VAULT CARD -->
+    <div id="vaultCard" class="vault-card">
+      <h1 class="final-title">Yay....Love you Soo Much</h1>
+      
+      <!-- Dancing Cat Sticker -->
+      <div class="cat-sticker-container">
+        <img src="https://tenor.com/en-GB/view/happy-cat-gif-10804346947536782797.gif" alt="Dancing Cat Sticker" class="cat-sticker">
+      </div>
+
+      <!-- Bottom Button -->
+      <button class="btn-main" onclick="triggerConfetti()">Send Extra Love ❤️</button>
+    </div>
+
+  </div>
+
+  <script>
+    // 5 Quiz Questions
+    const quizData = [
+      {
+        question: "1. Tell me when we first met?",
+        options: ["March 26", "August 26", "August 30", "August 28"],
+        answer: 0
+      },
+      {
+        question: "2.Where did we see each other?",
+        options: ["ICON", "The Corner of KFC", "On the bus", "Under The Bridge"],
+        answer: 3
+      },
+      {
+        question: "3.The food we have first",
+        options: ["Hotpot", "Pizza", "Spicy Chicken", "Ice-Cream"],
+        answer: 2
+      },
+      {
+        question: "4. The Moment you kissed me first",
+        options: ["While have foods", "when playing UNO", "While walking", "The moment I fall asleep"],
+        answer: 1
+      },
+      {
+        question: "5. Special things for us",
+        options: ["Phoning", "Fighting", "The memories of Thingyan", "Everything"],
+        answer: 3
+      }
+    ];
+
+    let currentQuestion = 0;
+
+    // Start Quiz & Play Music
+    function startQuiz() {
+      // Play Audio
+      const music = document.getElementById('bgMusic');
+      music.play().catch(e => console.log("Audio play error:", e));
+
+      // Switch Page
+      document.getElementById('welcomeCard').style.display = 'none';
+      document.getElementById('quizCard').style.display = 'block';
+      loadQuestion();
+    }
+
+    // Background floating stars
+    function createStars() {
+      const container = document.getElementById('bgStars');
+      const stars = ['⭐', '✨', '🌟', '💫', '✦'];
+      for (let i = 0; i < 25; i++) {
+        const star = document.createElement('div');
+        star.className = 'star-particle';
+        star.innerText = stars[Math.floor(Math.random() * stars.length)];
+        star.style.left = Math.random() * 100 + 'vw';
+        star.style.animationDuration = (Math.random() * 4 + 3) + 's';
+        star.style.animationDelay = Math.random() * 5 + 's';
+        container.appendChild(star);
+      }
+    }
+
+    function loadQuestion() {
+      const q = quizData[currentQuestion];
+      document.getElementById('questionBox').innerText = q.question;
+      
+      const optionsGrid = document.getElementById('optionsGrid');
+      optionsGrid.innerHTML = '';
+
+      // Update progress bar
+      const progress = ((currentQuestion) / quizData.length) * 100;
+      document.getElementById('progressBar').style.width = progress + '%';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-option';
+        btn.innerText = opt;
+        btn.onclick = () => selectOption(idx, btn);
+        optionsGrid.appendChild(btn);
+      });
+    }
+
+    function selectOption(idx, btnElement) {
+      const q = quizData[currentQuestion];
+      
+      if (idx === q.answer) {
+        btnElement.classList.add('correct');
+        
+        // Confetti effect for correct answer
+        confetti({
+          particleCount: 30,
+          spread: 60,
+          origin: { y: 0.7 }
+        });
+
+        setTimeout(() => {
+          currentQuestion++;
+          if (currentQuestion < quizData.length) {
+            loadQuestion();
+          } else {
+            showVault();
+          }
+        }, 800);
+      } else {
+        btnElement.classList.add('wrong');
+        setTimeout(() => {
+          btnElement.classList.remove('wrong');
+        }, 500);
+      }
+    }
+
+    function showVault() {
+      document.getElementById('quizCard').style.display = 'none';
+      document.getElementById('vaultCard').style.display = 'block';
+      triggerConfetti();
+    }
+
+    function triggerConfetti() {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    }
+
+    // Initialize Background Stars
+    createStars();
+  </script>
+</body>
+</html>
